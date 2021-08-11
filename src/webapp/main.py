@@ -732,7 +732,7 @@ def api_accesses_post():
 
 
 #------------------------------------------------
-@app.route('/api/accesses/multiple', methods=["POST"])
+@app.route('/api/accesses/multiple', methods=["POST"]) #UIUIUIUIUI nur weil ich es kann ;)
 def api_accesses_multi_post():
   reqObj = {
     "method": request.method,
@@ -802,7 +802,7 @@ def api_accesses_multi_post():
       reqObj["status"] = 500
       reqObj["message"] = "Invalid data provided"
       return jsonify(reqObj), reqObj["status"] 
-      
+
     for userId in userIds:
       usrObj = User.query.filter_by(id=userId).first()
       appObj = Apps.query.filter_by(id=appId).first()
@@ -822,6 +822,7 @@ def api_accesses_multi_post():
 
   #------------------
   return jsonify(reqObj), reqObj["status"] 
+
 
 #------------------------------------------------
 @app.route('/api/accesses/<id>', methods=["DELETE"])
