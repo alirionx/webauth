@@ -1,8 +1,0 @@
-werkzeug
-flask
-flask_cors
-Flask-SQLAlchemy
-SQLAlchemy-serializer
-Flask-Sessionstore
-PyYaml
-PyJWT
