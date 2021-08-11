@@ -67,7 +67,6 @@ class User(db.Model, SerializerMixin):
   zip = db.Column(db.Integer)
   password_hash = db.Column(db.String(128))
 
-
   role_id = db.Column(db.Integer, db.ForeignKey('roles.id') )
   role = db.relationship('Roles')
   
@@ -107,14 +106,34 @@ class Apps(db.Model, SerializerMixin):
   description = db.Column(db.String(256) )
   auth_url = db.Column(db.String(256) )
   app_url = db.Column(db.String(256) )
+  session_key = db.Column(db.String(64) )
   jwt_secret = db.Column(db.String(64) )
 
-  requiredCols = ["name", "auth_url", "app_url", "jwt_secret"]
-  changeableCols = ["name", "description", "auth_url", "app_url", "jwt_secret"]
-  dictCols = ["id", "name", "description", "auth_url", "app_url" ]
+  requiredCols = ["name", "auth_url", "app_url", "session_key", "jwt_secret"]
+  changeableCols = ["name", "description", "auth_url", "app_url", "session_key", "jwt_secret"]
+  dictCols = ["id", "name", "description", "auth_url", "app_url", "session_key" ]
 
   def __repr__(self):
-    return '<User %r>' % self.name
+    return '<App %r>' % self.name
+
+#---------------------
+class Access(db.Model, SerializerMixin):
+  
+  __tablename__ = 'access'
+  __table_args__ = (
+    db.UniqueConstraint('app_id', 'user_id', name='unique_app_to_user'),
+  )
+
+  id = db.Column(db.Integer, primary_key=True)
+  app_id = db.Column(db.Integer, db.ForeignKey('apps.id') )
+  app = db.relationship('Apps')
+  user_id = db.Column(db.Integer, db.ForeignKey('user.id') )
+  user = db.relationship('User')
+
+  requiredCols = ["app_id", "user_id"]
+
+  def __repr__(self):
+    return '<Access %r>' % self.id
 
 
 #-Helpers Section--------------------------------------------------
@@ -227,8 +246,9 @@ def api_users_post():
   for key in User.requiredCols:
     if key not in postIn:
       neededKeys.append(key)
-    elif len(postIn[key]) == 0:
-      neededKeys.append(key)
+    elif type(postIn[key]) == str:
+      if len(postIn[key]) == 0:
+        neededKeys.append(key)
 
   if len(neededKeys) > 0:
     reqObj["status"] = 400
@@ -555,8 +575,9 @@ def api_apps_post():
   for key in Apps.requiredCols:
     if key not in postIn:
       neededKeys.append(key)
-    elif len(postIn[key]) == 0:
-      neededKeys.append(key)
+    elif type(postIn[key]) == str:
+      if len(postIn[key]) == 0:
+        neededKeys.append(key)
 
   if len(neededKeys) > 0:
     reqObj["status"] = 400
@@ -629,6 +650,207 @@ def api_apps_delete(app):
   #------------------
   return jsonify(reqObj), reqObj["status"] 
 
+
+#------------------------------------------------
+@app.route('/api/accesses', methods=["GET"])
+def api_accesses_get():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  reqObj["data"] = []
+  accObj = Access.query.all()
+  for app in accObj:
+    dic = app.to_dict(only=("user_id", "app_id", "app.name", "user.username")) #GEIL!!!!
+    reqObj["data"].append(dic)
+
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
+
+
+#------------------------------------------------
+@app.route('/api/accesses', methods=["POST"])
+def api_accesses_post():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  postIn = request.json
+  if type(postIn) != dict:
+    reqObj["status"] = 400
+    reqObj["message"] = "Invalid Post Data"
+    return jsonify(reqObj), reqObj["status"] 
+  
+  neededKeys = []
+  for key in Access.requiredCols:
+    if key not in postIn:
+      neededKeys.append(key)
+    elif type(postIn[key]) == str:
+      if len(postIn[key]) == 0:
+        neededKeys.append(key)
+
+  if len(neededKeys) > 0:
+    reqObj["status"] = 400
+    reqObj["message"] = "Following Values are required: %s" %neededKeys
+    return jsonify(reqObj), reqObj["status"] 
+
+  try: 
+    user_id = int(postIn["user_id"])
+    app_id = int(postIn["app_id"])
+  except:
+    reqObj["status"] = 400
+    reqObj["message"] = "Following Values are in the wrong fomat. Use int!: %s, %s" %("user_id", "app_id")
+    return jsonify(reqObj), reqObj["status"] 
+
+  accObj = Access.query.filter_by(user_id=postIn["user_id"], app_id=postIn["app_id"]).first()
+  if accObj:
+    reqObj["status"] = 409
+    reqObj["message"] = "Access Rule already exists"
+    return jsonify(reqObj), reqObj["status"] 
+  
+  usrObj = User.query.filter_by(id=user_id).first()
+  appObj = Apps.query.filter_by(id=app_id).first()
+  if not usrObj or not appObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "Invalid Ids!"
+    return jsonify(reqObj), reqObj["status"] 
+
+  #-------------
+  accObj = Access(user=usrObj, app=appObj)
+  db.session.add(accObj)
+  db.session.commit() 
+  
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
+
+
+#------------------------------------------------
+@app.route('/api/accesses/multiple', methods=["POST"])
+def api_accesses_multi_post():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  postIn = request.json
+  if type(postIn) != dict:
+    reqObj["status"] = 400
+    reqObj["message"] = "Invalid Post Data"
+    return jsonify(reqObj), reqObj["status"] 
+
+  typ = None
+  if "user_id" in postIn:
+    if "app_ids" in postIn:
+      if type(postIn["app_ids"]) == list:
+        typ = "apps2user"
+
+  if "app_id" in postIn:
+    if "user_ids" in postIn:
+      if type(postIn["user_ids"]) == list:
+        typ = "users2app"
+
+  if not typ:
+    reqObj["status"] = 404
+    reqObj["message"] = "Invalid data provided"
+    return jsonify(reqObj), reqObj["status"] 
+
+  print(typ)
+
+  #---------------
+  if typ == "apps2user":
+    try:
+      userId = int(postIn["user_id"])
+      appIds = list(postIn["app_ids"])
+    except:
+      reqObj["status"] = 500
+      reqObj["message"] = "Invalid data provided"
+      return jsonify(reqObj), reqObj["status"] 
+
+    for appId in appIds:
+      usrObj = User.query.filter_by(id=userId).first()
+      appObj = Apps.query.filter_by(id=appId).first()
+      if not usrObj or not appObj:
+        reqObj["message"] += "app '%s' to user '%s' faild; " %(appId, userId)
+        continue
+
+      accObj = Access.query.filter_by(user_id=userId, app_id=appId).first()
+      if accObj:
+        reqObj["message"] += "app '%s' to user '%s' already exists; " %(appId, userId)
+        continue
+      
+      accObj = Access(user=usrObj, app=appObj)
+      db.session.add(accObj)
+
+    db.session.commit() 
+  
+  #-------------
+  if typ == "users2app":
+    try:
+      userIds = list(postIn["user_ids"])
+      appId = int(postIn["app_id"])
+    except:
+      reqObj["status"] = 500
+      reqObj["message"] = "Invalid data provided"
+      return jsonify(reqObj), reqObj["status"] 
+      
+    for userId in userIds:
+      usrObj = User.query.filter_by(id=userId).first()
+      appObj = Apps.query.filter_by(id=appId).first()
+      if not usrObj or not appObj:
+        reqObj["message"] += "user '%s' to app '%s' faild; " %(userId, appId)
+        continue
+
+      accObj = Access.query.filter_by(user_id=userId, app_id=appId).first()
+      if accObj:
+        reqObj["message"] += "user '%s' to app '%s' exists; " %(userId, appId)
+        continue
+      
+      accObj = Access(user=usrObj, app=appObj)
+      db.session.add(accObj)
+
+    db.session.commit() 
+
+  #------------------
+  return jsonify(reqObj), reqObj["status"] 
+
+#------------------------------------------------
+@app.route('/api/accesses/<id>', methods=["DELETE"])
+def api_accesses_delete(id):
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  accObj = Access.query.filter_by(id=id).first()
+  if not accObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "Access Rule '%s' not found" %id
+    return jsonify(reqObj), reqObj["status"] 
+
+  db.session.delete(accObj)
+  db.session.commit() 
+
+  #------------------
+  return jsonify(reqObj), reqObj["status"] 
+
+#------------------------------------------------
+
+#------------------------------------------------
+
+#------------------------------------------------
 
 #------------------------------------------------
 
