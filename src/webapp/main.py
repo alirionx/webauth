@@ -138,7 +138,7 @@ class Access(db.Model, SerializerMixin):
 
 
 #-Helpers Section--------------------------------------------------
-diableAuth = True
+diableAuth = False
 
 def create_base_roles():
   for role in Roles.rolesDefi:
@@ -163,7 +163,7 @@ def before_everything():
 def check_before_every_request():
   inf = "Do something here"
 
-  if not diableAuth and request.path.startswith("/api/") and "username" not in session:
+  if not diableAuth and request.path.startswith("/api/") and request.path != "/api/init" and "username" not in session:
     reqObj = {
       "method": request.method,
       "path": request.path,
@@ -197,6 +197,78 @@ def api_home_get():
 
   #-------------
   return jsonify(reqObj), 200 
+
+
+#------------------------------------------------
+@app.route('/api/init', methods=["GET"])
+def api_init_get():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  roleObj = Roles.query.filter_by(name="admin").first()
+  usrObj = User.query.filter_by(role=roleObj).first()
+  if not usrObj:
+    reqObj["status"] = 202
+    reqObj["message"] = "Backend not initialized yet"
+  else:
+    reqObj["message"] = "Backend is ready"
+
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
+
+#------------------------------------------------
+@app.route('/api/init', methods=["POST"])
+def api_init_post():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  roleObj = Roles.query.filter_by(name="admin").first()
+  usrObj = User.query.filter_by(role=roleObj).first()
+  if usrObj:
+    reqObj["status"] = 400
+    reqObj["message"] = "Backend already initialized"
+  
+  #-Validity Check---
+  postIn = request.json
+  if type(postIn) != dict:
+    reqObj["status"] = 400
+    reqObj["message"] = "Invalid Post Data"
+    return jsonify(reqObj), reqObj["status"] 
+
+  neededKeys = []
+  for key in User.requiredCols:
+    if key not in postIn:
+      neededKeys.append(key)
+    elif type(postIn[key]) == str:
+      if len(postIn[key]) == 0:
+        neededKeys.append(key)
+
+  if len(neededKeys) > 0:
+    reqObj["status"] = 400
+    reqObj["message"] = "Following Values are required: %s" %neededKeys
+    return jsonify(reqObj), reqObj["status"] 
+
+  #------------------
+  newUser = User(**postIn)
+  roleObj = Roles.query.filter_by(name="admin").first()
+  newUser.role = roleObj
+  
+  db.session.add(newUser)
+  db.session.commit()
+  
+  reqObj["message"] = "App Initialized with admin user: '%s'" %newUser.username
+
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
+
 
 #------------------------------------------------
 @app.route('/api/users', methods=["GET"])
