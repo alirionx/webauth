@@ -108,10 +108,11 @@ class Apps(db.Model, SerializerMixin):
   app_url = db.Column(db.String(256) )
   session_key = db.Column(db.String(64) )
   jwt_secret = db.Column(db.String(64) )
+  jwt_algorithm = db.Column(db.String(32) )
 
-  requiredCols = ["name", "auth_url", "app_url", "session_key", "jwt_secret"]
+  requiredCols = ["name", "auth_url", "app_url", "session_key", "jwt_secret", "jwt_algorithm"]
   changeableCols = ["name", "description", "auth_url", "app_url", "session_key", "jwt_secret"]
-  dictCols = ["id", "name", "description", "auth_url", "app_url", "session_key" ]
+  dictCols = ["id", "name", "description", "auth_url", "app_url", "session_key", "jwt_algorithm" ]
 
   def __repr__(self):
     return '<App %r>' % self.name
@@ -148,7 +149,6 @@ def create_base_roles():
       curRole = Roles(name=role["name"], description=role["description"])
       db.session.add(curRole)
       db.session.commit()
-  
 
 
 #-App Config and Access Management Section-----------------------
@@ -847,11 +847,60 @@ def api_accesses_delete(id):
   #------------------
   return jsonify(reqObj), reqObj["status"] 
 
+
 #------------------------------------------------
+@app.route('/api/jwt/<app>', methods=["GET"])
+def api_jwt_get(app):
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  try: app = int(app)
+  except: inf = "never mind"
+
+  appObj = Apps.query.filter((Apps.name == app) | (Apps.id == app)).first()  
+  if not appObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "App '%s' not found" %app
+    return jsonify(reqObj), reqObj["status"] 
+
+  if "username" not in session:
+    reqObj["status"] = 401
+    reqObj["message"] = "Please authenticate / login"
+    return jsonify(reqObj), reqObj["status"]
+  else:
+    usrName = session["username"]
+  
+  usrObj = User.query.filter_by(username=usrName).first()
+  accObj = Access.query.filter_by(user_id=usrObj.id, app_id=appObj.id).first()
+  if not accObj:
+    reqObj["status"] = 401
+    reqObj["message"] = "Access Denied"
+    return jsonify(reqObj), reqObj["status"]
+
+  #-------------------
+  payload = {
+    appObj.session_key: usrName
+  }
+  encJwt = jwt.encode(payload, appObj.jwt_secret, algorithm=appObj.jwt_algorithm)
+  reqObj["jwt"] = encJwt.decode()
+  reqObj["timestamp"] = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
+  reqObj["auth_url"] = appObj.auth_url
+  reqObj["app_url"] = appObj.app_url
+
+  #------------------
+  return jsonify(reqObj), reqObj["status"] 
+
 
 #------------------------------------------------
 
+
 #------------------------------------------------
+
 
 #------------------------------------------------
 
