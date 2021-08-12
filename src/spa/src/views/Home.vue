@@ -1,6 +1,6 @@
 <template>
   <div class="Home">
-   <h2>Home</h2>
+   <div class="viewHl">Home</div>
   </div>
 </template>
 
@@ -31,10 +31,8 @@ export default {
 </script>
 
 <style scoped>
-h2{
-  padding:10px;
-  color: rgb(36, 57, 85);
-}
+
+
 </style>
 
 

@@ -487,6 +487,28 @@ def api_users_role_put():
 
 
 #------------------------------------------------
+@app.route('/api/users/auth', methods=["GET"])
+def api_users_auth_get():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "auth": False,
+    "status": 200
+  }
+
+  if "username" in session and "role" in session:
+    reqObj["auth"] = True
+    reqObj["username"] = session["username"]
+    reqObj["role"] = session["role"]
+  else:
+    reqObj["status"] = 401
+    return jsonify(reqObj), reqObj["status"] 
+
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
+
+
+#------------------------------------------------
 @app.route('/api/users/auth', methods=["PUT"])
 def api_users_auth_put():
   reqObj = {
@@ -542,7 +564,7 @@ def api_users_auth_post():
   curUsr = postIn["username"]
   curPwd = postIn["password"]
   
-  usrObj = User.query.filter_by(username=curUsr).first()
+  usrObj = User.query.filter((User.username == curUsr) | (User.email == curUsr)).first()  
   if not usrObj:
     reqObj["status"] = 404
     reqObj["message"] = "User '%s' not found" %curUsr
@@ -560,7 +582,7 @@ def api_users_auth_post():
     reqObj["message"] = "Invalid credentials"
     return jsonify(reqObj), reqObj["status"]
   
-  session["username"] = curUsr
+  session["username"] = usrObj.username
   resDict = usrObj.to_dict(only=('role',))
   print(resDict)
   try:
@@ -571,6 +593,28 @@ def api_users_auth_post():
     return jsonify(reqObj), reqObj["status"] 
 
   reqObj["message"] = "User '%s' logged in via session. Role is: '%s'" % (session["username"], session["role"])
+
+  #------------------
+  return jsonify(reqObj), reqObj["status"] 
+
+
+#------------------------------------------------
+@app.route('/api/users/auth', methods=["DELETE"])
+def api_users_auth_delete():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  try:
+    session.pop("username")
+    session.pop("role")
+  except:
+    session["status"] = 400
+    session["message"] = "Failed to logoff"
+    return jsonify(reqObj), reqObj["status"] 
 
   #------------------
   return jsonify(reqObj), reqObj["status"] 

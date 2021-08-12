@@ -1,6 +1,6 @@
 <template>
   <div class="Apps">
-   <h2>Apps</h2>
+   <div class="viewHl">Apps</div>
   </div>
 </template>
 

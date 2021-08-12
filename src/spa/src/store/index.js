@@ -1,9 +1,12 @@
 import { createStore } from 'vuex'
-import axios from 'axios'
 
 export default createStore({
   state: {
-    appReady: false
+    appReady: false,
+    username: null,
+    role: null,
+    systemMsg: null,
+    confirmMsg: null,
   },
   mutations: {
     set_app_ready(state){
@@ -13,22 +16,29 @@ export default createStore({
       state.appReady = false;
     },
 
+    set_username(state, username){
+      state.username = username;
+    },
+    unset_username(state){
+      state.username = null;
+    },
+    set_role(state, role){
+      state.role = role;
+    },
+    unset_role(state){
+      state.role = null;
+    },
+
+    set_system_message(state, msg){
+      state.systemMsg = msg;
+    },
+    unset_system_message(state){
+      state.systemMsg = null;
+    },
+
   },
   actions: {
-    check_app_ready(context){
-      axios.get("/api/init").then(response => { 
-        console.log(response.data);
-        if(response.status == 200){
-          context.commit('set_app_ready');
-        }
-        else{
-          context.commit('set_app_unready');
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    }
+    
   },
   modules: {
   }
