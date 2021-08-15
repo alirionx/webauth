@@ -24,6 +24,13 @@ const routes = [
     component: Login
   },
   {
+    path: '/users',
+    name: 'Users',
+    component: function () {
+      return import('../views/Users.vue')
+    }
+  },
+  {
     path: '/apps',
     name: 'Apps',
     component: function () {

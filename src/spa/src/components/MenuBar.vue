@@ -24,6 +24,10 @@ export default {
           lnk: "#/"
         },
         {
+          txt: "Users",
+          lnk: "#/users"
+        },
+        {
           txt: "Apps",
           lnk: "#/apps"
         },
@@ -71,14 +75,14 @@ export default {
   position: absolute;
   right: 14px;
   bottom:6px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: bold;
   color:#000;
   white-space: nowrap;
 }
 .menuBar div{
   display: inline-block;
-  min-width: 60px;
+  min-width: 70px;
   padding:1px 8px 1px 8px;
   text-align: center;
   border-left: 2px solid #000;

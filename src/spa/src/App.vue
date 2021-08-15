@@ -261,6 +261,34 @@ body{
   text-shadow: 0px 1px #fff;
 }
 
+
+.stdTable{
+  margin: 20px auto 20px auto;
+  min-width: 1000px;
+}
+.stdTable th{
+  background-color: #203958;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding:4px 6px 4px 6px;
+  border: 1px solid #000;
+  cursor:pointer;
+}
+.stdTable .sortTh{
+  position:relative;
+  padding-right: 30px;
+}
+
+.stdTable td{
+  background-color: #fff;
+  color: #000;
+  font-size: 15px;
+  padding:6px;
+  border: 1px solid #aaa;
+  white-space: nowrap;
+}
+
 </style>
 
 
