@@ -324,6 +324,20 @@ body{
   background-color: #203958;
 }
 
+.accessCheckBox{
+  padding-left:30px;
+  text-align: left;
+}
+.accessCheckBox input[type=checkbox]{
+  transform: scale(1.4);
+  margin: 10px 16px auto auto;
+  cursor: pointer;
+}
+.accessCheckBox label{
+  line-height: 30px;
+  font-size: 16px;
+  cursor: pointer;
+}
 
 </style>
 

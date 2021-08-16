@@ -893,11 +893,20 @@ def api_accesses_multi_post():
       reqObj["message"] = "Invalid data provided"
       return jsonify(reqObj), reqObj["status"] 
 
+    #-CleanUp Option-----
+    if "delete" in postIn:
+      if postIn["delete"]:
+        accessList = Access.query.filter_by(user_id=userId)
+        for accObj in accessList:
+          db.session.delete(accObj)
+        db.session.commit() 
+    #--------------------
+
     for appId in appIds:
       usrObj = User.query.filter_by(id=userId).first()
       appObj = Apps.query.filter_by(id=appId).first()
       if not usrObj or not appObj:
-        reqObj["message"] += "app '%s' to user '%s' faild; " %(appId, userId)
+        reqObj["message"] += "app '%s' to user '%s' failed; " %(appId, userId)
         continue
 
       accObj = Access.query.filter_by(user_id=userId, app_id=appId).first()
@@ -920,11 +929,20 @@ def api_accesses_multi_post():
       reqObj["message"] = "Invalid data provided"
       return jsonify(reqObj), reqObj["status"] 
 
+    #-CleanUp Option-----
+    if "delete" in postIn:
+      if postIn["delete"]:
+        accessList = Access.query.filter_by(app_id=appId)
+        for accObj in accessList:
+          db.session.delete(accObj)
+        db.session.commit() 
+    #--------------------
+
     for userId in userIds:
       usrObj = User.query.filter_by(id=userId).first()
       appObj = Apps.query.filter_by(id=appId).first()
       if not usrObj or not appObj:
-        reqObj["message"] += "user '%s' to app '%s' faild; " %(userId, appId)
+        reqObj["message"] += "user '%s' to app '%s' failed; " %(userId, appId)
         continue
 
       accObj = Access.query.filter_by(user_id=userId, app_id=appId).first()

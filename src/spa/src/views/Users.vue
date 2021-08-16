@@ -43,6 +43,11 @@
       v-if="activeRole!=null"
       v-bind:callback="reset_user_set_role"
       v-bind:dataIn="data[activeRole]" />
+
+    <SetAccessesUser 
+      v-if="activeAccess!=null"
+      v-bind:callback="reset_user_set_access"
+      v-bind:dataIn="data[activeAccess]" />
       
 
   </div>
@@ -54,6 +59,7 @@ import ActionMenu from '../components/ActionMenu.vue'
 import UserAdd from '../components/UserAdd.vue'
 import UserEdit from '../components/UserEdit.vue'
 import SetRole from '../components/SetRole.vue'
+import SetAccessesUser from '../components/SetAccessesUser.vue'
 
 export default {
   name: 'Users',
@@ -65,6 +71,7 @@ export default {
     UserAdd,
     UserEdit,
     SetRole,
+    SetAccessesUser,
   },
   data(){
     return {
@@ -73,6 +80,7 @@ export default {
       activeEdit: null,
       activeAdd: false,
       activeRole: null,
+      activeAccess: null,
       data: [],
       defi:[
         {
@@ -159,15 +167,14 @@ export default {
       axios.get("/api/users").then(response => { 
         //console.log(response.data);
         this.data = response.data.data;
-        
       })
       .catch(error => {
         console.log(error);
+        this.$store.state.systemMsg = error.response.data.message;
       })
       .finally(()=> { 
         this.$store.state.loader = false; 
       });
-      
     },
 
     get_sub_val(idx,col){
@@ -209,8 +216,13 @@ export default {
     },
 
     call_user_set_access(idx){
-      console.log("Set Access: " +this.data[idx].username)
+      this.activeAccess = idx;
     },
+    reset_user_set_access(idx){
+      this.activeAccess = null;
+    },
+
+
     call_user_delete(idx){
       let curUserName = this.data[idx].username;
       this.$store.state.confirmMsg = "Do you really want to delete User: "+curUserName+"?";
