@@ -81,7 +81,7 @@ export default {
   border-right:18px solid #333;
 }
 .actMenuFrame .btn{
-  background-color: #444;
+  background-color: #203958;
   border:1px solid #111;
   margin-bottom: -1px;
   color: #fff;
@@ -92,6 +92,6 @@ export default {
   cursor: pointer;
 }
 .actMenuFrame .btn:hover{
-  background-color: #024d90;
+  background-color: #285894;
 }
 </style>

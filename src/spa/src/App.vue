@@ -9,6 +9,8 @@
     <div class="usrRoleBox">{{$store.state.username}} : {{$store.state.role}}</div>
 
     <MessageBox v-if="$store.state.systemMsg" />
+    <ConfirmBox v-if="$store.state.confirmMsg" />
+
     <Loader v-if="$store.state.loader" />
 
     <router-view/>
@@ -18,6 +20,7 @@
 
 <script>
 import MessageBox from '@/components/MessageBox.vue'
+import ConfirmBox from '@/components/ConfirmBox.vue'
 import Loader from '@/components/Loader.vue'
 import MenuBar from '@/components/MenuBar.vue'
 
@@ -25,6 +28,7 @@ export default {
   name: 'App',
   components:{
     MessageBox,
+    ConfirmBox,
     Loader,
     MenuBar
   },
@@ -96,10 +100,10 @@ body{
   left:0;
   width: 100%;
   height:100vh;
-  padding-top: 24vh;
+  padding-top: 8vh;
   background-color: rgba(0, 0, 0, 0.6);
   text-align:center;
-  z-index:11;
+  z-index:10;
 }
 
 .viewHl{
@@ -118,11 +122,11 @@ body{
   /* display: table; */
   width: 30%;
   min-width: 600px;
-  margin: auto; 
+  margin: 12vh auto auto auto; 
   padding:18px;
   background-color: #eee;
   border: 1px solid #666 solid;
-  box-shadow: 4px 8px 12px #444;
+  box-shadow: 4px 8px 12px #333;
   text-align: center;
 }
 .messageBox .hl{
@@ -168,14 +172,14 @@ body{
 
 .stdForm{
   display: table;
-  margin: 3vh auto auto auto;
+  margin: auto;
   min-width:550px;
   min-height:100px;
   text-align:left;
-  padding:26px;
+  padding:22px;
   border: 1px solid #444;
   /* border-radius: 12px; */
-  box-shadow: 0px 8px 14px #555;
+  box-shadow: 0px 8px 14px #333;
   background-color:#f5f5f5;
 }
 .stdForm .hl{
@@ -201,18 +205,29 @@ body{
   font-size:14px;
   font-weight:bold;
   color: #000;
-  padding:12px 8px 4px 2px;
+  padding:10px 8px 4px 2px;
 }
 .stdForm input[type=text],input[type=password],input[type=email]{
   text-align: left;
   font-size:16px;
   color: #000;
-  padding:10px;
+  padding:8px;
   margin: 0px 0px 8px 2px;
   border: 0.5px solid #777;
   background-color:#fff;
   box-shadow: 0px 1px 1px #444;
   width:95%;
+}
+.stdForm input[type=number]{
+  text-align: left;
+  font-size:16px;
+  color: #000;
+  padding:8px;
+  margin: 0px 0px 8px 2px;
+  border: 0.5px solid #777;
+  background-color:#fff;
+  box-shadow: 0px 1px 1px #444;
+  min-width:180px
 }
 .stdForm input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,input[type=email]:focus{
   background-color:rgb(247, 249, 255);
@@ -234,15 +249,14 @@ body{
 
 .stdForm .btnFrame{
   text-align: center;
-  padding:26px 0px 2px 0px;
+  padding:20px 0px 0px 0px;
 }
 .stdForm .btnFrame button{
   min-width:110px;
   background-color: #285894;
   color:#fff;
   text-align:center;
-  font-size:14px;
-  font-weight: 500;
+  font-size:16px;
   padding:5px;
   margin: auto 12px auto 12px;
   border-radius: 4px;
@@ -252,6 +266,7 @@ body{
 .stdForm .btnFrame button:hover{
   background-color: #203958;
 }
+
 
 .usrRoleBox{
   position: fixed;
@@ -264,6 +279,7 @@ body{
 
 .stdTable{
   margin: 20px auto 20px auto;
+  padding-right: 20px;
   min-width: 1000px;
 }
 .stdTable th{
@@ -279,7 +295,6 @@ body{
   position:relative;
   padding-right: 30px;
 }
-
 .stdTable td{
   background-color: #fff;
   color: #000;
@@ -288,6 +303,27 @@ body{
   border: 1px solid #aaa;
   white-space: nowrap;
 }
+.stdTable .lastline td{
+  border:none;
+  background: none;
+  padding:14px 4px 4px 4px;
+  text-align: right;
+}
+.stdTable button{
+  background-color: #285894;
+  color:#fff;
+  text-align:center;
+  font-size:14px;
+  padding:3px 6px 3px 6px;
+  margin: auto;
+  border-radius: 4px;
+  border: 1px solid #000;
+  cursor:pointer;
+}
+.stdTable button:hover{
+  background-color: #203958;
+}
+
 
 </style>
 

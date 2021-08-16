@@ -61,7 +61,7 @@ class User(db.Model, SerializerMixin):
   email = db.Column(db.String(64), unique=True)
   company = db.Column(db.String(64))
   unit = db.Column(db.String(64))
-  phone = db.Column(db.String(16), unique=True)
+  phone = db.Column(db.String(16))
   address = db.Column(db.String(64))
   city = db.Column(db.String(64))
   zip = db.Column(db.Integer)

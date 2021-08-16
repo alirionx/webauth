@@ -7,6 +7,7 @@ export default createStore({
     role: null,
     systemMsg: null,
     confirmMsg: null,
+    confirmFw: null,
   },
   mutations: {
     set_app_ready(state){
@@ -34,6 +35,11 @@ export default createStore({
     },
     unset_system_message(state){
       state.systemMsg = null;
+    },
+
+    unset_confirm(state){
+      state.confirmMsg = null;
+      state.confirmFw = null;
     },
 
   },

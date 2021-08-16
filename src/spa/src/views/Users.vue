@@ -22,7 +22,28 @@
 
         </td>
       </tr>
+      <tr class="lastline">
+        <td :colspan="defi.length">
+          <button @click="call_user_add">add</button>
+        </td>
+      </tr>
     </table>
+    
+    <UserAdd 
+      v-if="activeAdd"
+      v-bind:callback="reset_user_add"
+      v-bind:dataIn="data" />
+
+    <UserEdit 
+      v-if="activeEdit!=null"
+      v-bind:callback="reset_user_edit"
+      v-bind:dataIn="data[activeEdit]" />
+
+    <SetRole 
+      v-if="activeRole!=null"
+      v-bind:callback="reset_user_set_role"
+      v-bind:dataIn="data[activeRole]" />
+      
 
   </div>
 </template>
@@ -30,6 +51,9 @@
 <script>
 import axios from 'axios';
 import ActionMenu from '../components/ActionMenu.vue'
+import UserAdd from '../components/UserAdd.vue'
+import UserEdit from '../components/UserEdit.vue'
+import SetRole from '../components/SetRole.vue'
 
 export default {
   name: 'Users',
@@ -37,12 +61,18 @@ export default {
     msg: String
   },
   components:{
-    ActionMenu
+    ActionMenu,
+    UserAdd,
+    UserEdit,
+    SetRole,
   },
   data(){
     return {
       componentTitle: "Users",
       activeIdx: null,
+      activeEdit: null,
+      activeAdd: false,
+      activeRole: null,
       data: [],
       defi:[
         {
@@ -58,7 +88,7 @@ export default {
         {
           grp: "role",
           col: "name",
-          hl: "Email",
+          hl: "Role",
           align: "left",
         },
         {
@@ -104,7 +134,7 @@ export default {
       ],
       menuActs:[
         {
-          txt: "Edit",
+          txt: "Edit Metadata",
           act: this.call_user_edit
         },
         {
@@ -127,7 +157,7 @@ export default {
     api_call_users(){
       this.$store.state.loader = true;
       axios.get("/api/users").then(response => { 
-        console.log(response.data);
+        //console.log(response.data);
         this.data = response.data.data;
         
       })
@@ -141,7 +171,13 @@ export default {
     },
 
     get_sub_val(idx,col){
-      return this.data[idx][col.grp][col.col];
+      try{
+        return this.data[idx][col.grp][col.col];
+      }
+      catch{
+        return null;
+      }
+      
     },
 
     set_active_menu(idx){
@@ -151,17 +187,50 @@ export default {
       this.activeIdx = null;
     },
 
+    call_user_add(){
+      this.activeAdd = true;
+    },
+    reset_user_add(){
+      this.activeAdd = false;
+    },
+
     call_user_edit(idx){
-      console.log("Edit: " +this.data[idx].username)
+      this.activeEdit = idx;
     },
+    reset_user_edit(idx){
+      this.activeEdit = null;
+    },
+
     call_user_set_role(idx){
-      console.log("Set Role: " +this.data[idx].username)
+      this.activeRole = idx;
     },
+    reset_user_set_role(idx){
+      this.activeRole = null;
+    },
+
     call_user_set_access(idx){
       console.log("Set Access: " +this.data[idx].username)
     },
     call_user_delete(idx){
-      console.log("Delete: " +this.data[idx].username)
+      let curUserName = this.data[idx].username;
+      this.$store.state.confirmMsg = "Do you really want to delete User: "+curUserName+"?";
+      this.$store.state.confirmFw = ()=>{this.do_user_delete(idx)};
+    },
+    do_user_delete(idx){
+      this.$store.state.loader = true; 
+      let curUserName = this.data[idx].username;
+
+      axios.delete("/api/users/"+curUserName).then(response => { 
+        //console.log(response.data);
+        this.data.splice(idx, 1); 
+      })
+      .catch(error => {
+        console.log(error);
+        this.$store.state.systemMsg = error.response.data.message;
+      })
+      .finally(()=> { 
+        this.$store.state.loader = false; 
+      });
     }
 
   },
@@ -181,10 +250,8 @@ export default {
 </script>
 
 <style scoped>
-h2{
-  padding:10px;
-  color: rgb(36, 57, 85);
-}
+
+
 </style>
 
 
