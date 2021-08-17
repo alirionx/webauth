@@ -154,6 +154,10 @@ export default {
           act: this.call_user_set_access
         },
         {
+          txt: "Set Password",
+          act: this.call_user_reset_password
+        },
+        {
           txt: "Delete",
           act: this.call_user_delete
         }
@@ -243,7 +247,11 @@ export default {
       .finally(()=> { 
         this.$store.state.loader = false; 
       });
-    }
+    },
+
+    call_user_reset_password(idx){
+      console.log("Reset password 4 user "+data[idx].username);
+    },
 
   },
   mounted: function(){

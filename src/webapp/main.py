@@ -110,9 +110,11 @@ class Apps(db.Model, SerializerMixin):
   jwt_secret = db.Column(db.String(64) )
   jwt_algorithm = db.Column(db.String(32) )
 
-  requiredCols = ["name", "auth_url", "app_url", "session_key", "jwt_secret", "jwt_algorithm"]
+  # requiredCols = ["name", "auth_url", "app_url", "session_key", "jwt_secret", "jwt_algorithm"]
+  requiredCols = ["name", "auth_url", "app_url", "session_key"]
   changeableCols = ["name", "description", "auth_url", "app_url", "session_key", "jwt_secret"]
-  dictCols = ["id", "name", "description", "auth_url", "app_url", "session_key", "jwt_algorithm" ]
+  # dictCols = ["id", "name", "description", "auth_url", "app_url", "session_key", "jwt_algorithm" ]
+  dictCols = ["id", "name", "description", "auth_url", "app_url" ]
 
   def __repr__(self):
     return '<App %r>' % self.name
@@ -769,6 +771,52 @@ def api_apps_delete(app):
 
 
 #------------------------------------------------
+@app.route('/api/app/jwt', methods=["POST"])
+def api_app_jwt_post():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  neededVals = ["app", "jwt_secret", "jwt_algorithm"]
+
+  postIn = request.json
+  if type(postIn) != dict:
+    reqObj["status"] = 400
+    reqObj["message"] = "Invalid Post Data"
+    return jsonify(reqObj), reqObj["status"] 
+
+  missingVals = []
+  for key in neededVals:
+    if key not in postIn:
+      missingVals.append(key)
+    elif postIn[key] == "":
+      missingVals.append(key)
+
+  if len(missingVals)>0:
+    reqObj["status"] = 400
+    reqObj["message"] = "The following values are missing: %s" %missingVals
+    return jsonify(reqObj), reqObj["status"] 
+
+  appObj = Apps.query.filter_by(name=postIn["app"]).first()
+  if not appObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "App '%s' does not exist" +postIn["app"]
+    return jsonify(reqObj), reqObj["status"] 
+  
+  #-------------------
+  appObj.jwt_algorithm = postIn["jwt_algorithm"]
+  appObj.jwt_secret = postIn["jwt_secret"]
+
+  db.session.commit()
+
+  #------------------
+  return jsonify(reqObj), reqObj["status"] 
+
+#------------------------------------------------
 @app.route('/api/accesses', methods=["GET"])
 def api_accesses_get():
   reqObj = {
@@ -1001,6 +1049,11 @@ def api_jwt_get(app):
   if not appObj:
     reqObj["status"] = 404
     reqObj["message"] = "App '%s' not found" %app
+    return jsonify(reqObj), reqObj["status"] 
+
+  if not appObj.jwt_secret or not appObj.jwt_algorithm:
+    reqObj["status"] = 400
+    reqObj["message"] = "JWT for App '%s' not configured" %app
     return jsonify(reqObj), reqObj["status"] 
 
   if "username" not in session:

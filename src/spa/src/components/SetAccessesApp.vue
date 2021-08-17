@@ -2,7 +2,7 @@
   <div class="blocker">
     
     <div class="stdForm">
-      <div class="hl">Set App Accesess for User: {{dataIn.username}}</div>
+      <div class="hl">Set Accesess for App: {{dataIn.name}}</div>
       
       <div class="spacer" ></div>
       
@@ -27,14 +27,14 @@
 import axios from 'axios';
 
 export default {
-  name: 'SetAccessesUser',
+  name: 'SetAccessesApp',
   props: {
     dataIn: Object,
     callback: Function,
   },
   data(){
     return{
-      apps:[],
+      users:[],
       accesses:[],
       putData:{
         username: this.dataIn.username,
@@ -43,10 +43,10 @@ export default {
     }
   },
   methods:{
-    call_apps(){
-      return axios.get("/api/apps").then(response => { 
+    call_users(){
+      return axios.get("/api/users").then(response => { 
         // console.log(response.data);
-        this.apps = response.data.data;
+        this.users = response.data.data;
       })
       .catch(error => {
         console.log(error);
@@ -58,7 +58,7 @@ export default {
     call_accesses(){
       axios.get("/api/accesses").then(response => { 
         // console.log(response.data);
-        this.build_4_user(response.data.data);
+        this.build_4_app(response.data.data);
       })
       .catch(error => {
         console.log(error);
@@ -67,17 +67,17 @@ export default {
       .finally(()=> { 
       });
     },
-    build_4_user(data){
+    build_4_app(data){
       this.accesses = [];
-      for(let idx in this.apps){
-        let curApp = this.apps[idx];
+      for(let idx in this.users){
+        let curUsr = this.users[idx];
         let curAccess = {
-          id: curApp.id,
-          name: curApp.name,
+          id: curUsr.id,
+          name: curUsr.username,
           set: false
         }
         for(let idx2 in data){
-          if(data[idx2].app_id == curApp.id && data[idx2].user_id == this.dataIn.id){
+          if(data[idx2].user_id == curUsr.id && data[idx2].app_id == this.dataIn.id){
             curAccess.set = true;
           }
         }
@@ -90,13 +90,13 @@ export default {
       // console.log(this.accesses);
       const postData = {
         delete: true,
-        user_id: this.dataIn.id,
-        app_ids: []
+        user_ids: [],
+        app_id: this.dataIn.id
       }
       for(let idx in this.accesses){
         let curAccess = this.accesses[idx];
         if(curAccess.set){
-          postData.app_ids.push(curAccess.id);
+          postData.user_ids.push(curAccess.id);
         }
       }
       // console.log(postData);
@@ -119,7 +119,7 @@ export default {
   },
   mounted: async function(){
     this.$store.state.loader = true; 
-    await this.call_apps();
+    await this.call_users();
     this.call_accesses();
     this.$store.state.loader = false; 
   }

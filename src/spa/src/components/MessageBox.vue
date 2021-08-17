@@ -1,5 +1,5 @@
 <template>
-  <div class="blocker">
+  <div class="blocker" style="z-index:11;">
     
     <div class="messageBox">
       <div class="hl">System Message</div>

@@ -207,7 +207,7 @@ body{
   color: #000;
   padding:10px 8px 4px 2px;
 }
-.stdForm input[type=text],input[type=password],input[type=email]{
+.stdForm input[type=text],input[type=password],input[type=email],input[type=url]{
   text-align: left;
   font-size:16px;
   color: #000;
@@ -229,7 +229,7 @@ body{
   box-shadow: 0px 1px 1px #444;
   min-width:180px
 }
-.stdForm input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,input[type=email]:focus{
+.stdForm input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,input[type=email]:focus,input[type=url]:focus{
   background-color:rgb(247, 249, 255);
 }
 .stdForm input[type=text][disabled]{
