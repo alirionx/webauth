@@ -50,7 +50,7 @@ export default {
     },
 
     logout(){
-      axios.delete("/api/users/auth").then(response => { 
+      axios.delete("/api/user/auth").then(response => { 
         console.log(response.data);
         this.$store.commit('unset_username');
         this.$store.commit('unset_role');

@@ -165,7 +165,7 @@ def before_everything():
 def check_before_every_request():
   inf = "Do something here"
 
-  if not diableAuth and request.path.startswith("/api/") and request.path != "/api/init" and request.path != "/api/users/auth" and "username" not in session: #LACY!!!
+  if not diableAuth and request.path.startswith("/api/") and request.path != "/api/init" and request.path != "/api/user/auth" and "username" not in session: #LACY!!!
     reqObj = {
       "method": request.method,
       "path": request.path,
@@ -442,7 +442,7 @@ def api_users_delete(username):
 
 
 #------------------------------------------------
-@app.route('/api/users/role', methods=["PUT"])
+@app.route('/api/user/role', methods=["PUT"])
 def api_users_role_put():
   reqObj = {
     "method": request.method,
@@ -489,8 +489,8 @@ def api_users_role_put():
 
 
 #------------------------------------------------
-@app.route('/api/users/auth', methods=["GET"])
-def api_users_auth_get():
+@app.route('/api/user/auth', methods=["GET"])
+def api_user_auth_get():
   reqObj = {
     "method": request.method,
     "path": request.path,
@@ -511,7 +511,7 @@ def api_users_auth_get():
 
 
 #------------------------------------------------
-@app.route('/api/users/auth', methods=["PUT"])
+@app.route('/api/user/auth', methods=["PUT"])
 def api_users_auth_put():
   reqObj = {
     "method": request.method,
@@ -546,7 +546,7 @@ def api_users_auth_put():
 
 
 #------------------------------------------------
-@app.route('/api/users/auth', methods=["POST"])
+@app.route('/api/user/auth', methods=["POST"])
 def api_users_auth_post():
   reqObj = {
     "method": request.method,
@@ -601,7 +601,7 @@ def api_users_auth_post():
 
 
 #------------------------------------------------
-@app.route('/api/users/auth', methods=["DELETE"])
+@app.route('/api/user/auth', methods=["DELETE"])
 def api_users_auth_delete():
   reqObj = {
     "method": request.method,

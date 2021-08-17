@@ -61,7 +61,7 @@ export default {
         return
       }
       
-      axios.put("/api/users/role", this.putData).then(response => { 
+      axios.put("/api/user/role", this.putData).then(response => { 
         console.log(response.data);
         if(!this.dataIn.role){
           this.dataIn.role = {};

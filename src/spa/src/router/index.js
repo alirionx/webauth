@@ -84,7 +84,7 @@ function check_app_ready(){
 
 //-----------------
 function check_login(){
-  return axios.get("/api/users/auth").then(response => { 
+  return axios.get("/api/user/auth").then(response => { 
     console.log(response.data);
     store.commit('set_username', response.data.username);
     store.commit('set_role', response.data.role);

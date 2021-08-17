@@ -38,7 +38,7 @@ export default {
   },
   methods:{
     login(){
-      axios.post("/api/users/auth", this.formData).then(response => { 
+      axios.post("/api/user/auth", this.formData).then(response => { 
         console.log(response.data);
         location.hash = "/";
       })
