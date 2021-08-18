@@ -11,7 +11,10 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: { 
+      role: ["user", "admin"]
+    }
   },
   {
     path: '/init',
@@ -24,10 +27,20 @@ const routes = [
     component: Login
   },
   {
+    path: '/401',
+    name: '401',
+    component: function () {
+      return import('../views/401.vue')
+    }
+  },
+  {
     path: '/users',
     name: 'Users',
     component: function () {
       return import('../views/Users.vue')
+    },
+    meta: { 
+      role: ["admin"]
     }
   },
   {
@@ -35,6 +48,9 @@ const routes = [
     name: 'Apps',
     component: function () {
       return import('../views/Apps.vue')
+    },
+    meta: { 
+      role: ["admin"]
     }
   }
 ]
@@ -56,6 +72,12 @@ router.beforeEach(async (to, from, next) => {
   if(to.name != "Login" && store.state.appReady && !store.state.role){
     if(!await check_login()){
       var redirect = 'Login';
+    }
+  }
+  //---------------
+  if(to.meta.role && store.state.role){
+    if(!to.meta.role.includes(store.state.role)){
+      var redirect = '401'; 
     }
   }
   //---------------

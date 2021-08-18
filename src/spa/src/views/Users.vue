@@ -48,6 +48,11 @@
       v-if="activeAccess!=null"
       v-bind:callback="reset_user_set_access"
       v-bind:dataIn="data[activeAccess]" />
+
+    <ResetUserPassword 
+      v-if="activePassword!=null"
+      v-bind:callback="reset_user_reset_password"
+      v-bind:dataIn="data[activePassword]" />
       
 
   </div>
@@ -60,6 +65,7 @@ import UserAdd from '../components/UserAdd.vue'
 import UserEdit from '../components/UserEdit.vue'
 import SetRole from '../components/SetRole.vue'
 import SetAccessesUser from '../components/SetAccessesUser.vue'
+import ResetUserPassword from '../components/ResetUserPassword.vue'
 
 export default {
   name: 'Users',
@@ -72,6 +78,7 @@ export default {
     UserEdit,
     SetRole,
     SetAccessesUser,
+    ResetUserPassword
   },
   data(){
     return {
@@ -81,6 +88,7 @@ export default {
       activeAdd: false,
       activeRole: null,
       activeAccess: null,
+      activePassword: null,
       data: [],
       defi:[
         {
@@ -226,6 +234,13 @@ export default {
       this.activeAccess = null;
     },
 
+    call_user_reset_password(idx){
+      this.activePassword = idx;
+    },
+    reset_user_reset_password(idx){
+      this.activePassword = null;
+    },
+
 
     call_user_delete(idx){
       let curUserName = this.data[idx].username;
@@ -247,10 +262,6 @@ export default {
       .finally(()=> { 
         this.$store.state.loader = false; 
       });
-    },
-
-    call_user_reset_password(idx){
-      console.log("Reset password 4 user "+data[idx].username);
     },
 
   },

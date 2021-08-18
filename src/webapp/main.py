@@ -33,6 +33,33 @@ confFilePath = os.path.join(confFileDir, "app_config.yaml")
 # if not os.path.isdir(confFileDir): 
 #   os.makedirs(confFileDir, exist_ok=True)
 
+accessMatrix = [
+  {
+    "path": "/api/users",
+    "methods": ["GET", "POST", "PUT"],
+    "roles": ["admin"],
+    "auth": True
+  },
+  {
+    "path": "/api/user/auth",
+    "methods": ["POST", "GET"],
+    "auth": False
+  },
+  {
+    "path": "/api/user/",
+    "methods": ["GET", "POST", "PUT"],
+    "roles": ["admin"],
+    "auth": True
+  },
+  {
+    "path": "/api/apps",
+    "methods": ["GET", "POST", "PUT"],
+    "roles": ["admin"],
+    "auth": True
+  }
+]
+
+
 
 #-Build the flask app object---------------------------------------WASN BRETT
 app = Flask(__name__, static_url_path='', static_folder='dist' )
@@ -142,6 +169,7 @@ class Access(db.Model, SerializerMixin):
 #-Helpers Section--------------------------------------------------
 diableAuth = False
 
+#-----------------
 def create_base_roles():
   for role in Roles.rolesDefi:
     # print(role)
@@ -151,6 +179,8 @@ def create_base_roles():
       curRole = Roles(name=role["name"], description=role["description"])
       db.session.add(curRole)
       db.session.commit()
+
+#-----------------
 
 
 #-App Config and Access Management Section-----------------------
@@ -165,14 +195,28 @@ def before_everything():
 def check_before_every_request():
   inf = "Do something here"
 
+  #-The Init and Auth Thing---
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 401
+  }
   if not diableAuth and request.path.startswith("/api/") and request.path != "/api/init" and request.path != "/api/user/auth" and "username" not in session: #LACY!!!
-    reqObj = {
-      "method": request.method,
-      "path": request.path,
-      "message": "Please authenticate / login",
-      "status": 401
-    }
+    reqObj["message"] = "Please authenticate / login"
     return jsonify(reqObj), 401 
+
+  #-The Access rights Thing---
+  for rule in accessMatrix:
+    if not rule["auth"] and request.method in rule["methods"]: 
+      break
+    if not diableAuth and "role" in session and request.path.startswith(rule["path"]) and request.method in rule["methods"]: #Double LACY!!!
+      curRole = session["role"]
+      if curRole not in rule["roles"]:
+        reqObj["message"] = "Not Allowed for role '%s'" %curRole
+        return jsonify(reqObj), 401
+      break
+      
 
 
 #-The HTML serve part---------------------------------------------
@@ -276,6 +320,7 @@ def api_init_post():
 #------------------------------------------------
 @app.route('/api/users', methods=["GET"])
 def api_users_get():
+
   reqObj = {
     "method": request.method,
     "path": request.path,

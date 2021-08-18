@@ -62,7 +62,7 @@ export default {
   methods:{
     submit(){
       if(this.postData.jwt_secret!=this.repSecret){
-        this.$store.state.systemMsg = "Password repeate does not fit.";
+        this.$store.state.systemMsg = "Secret repeate does not fit.";
         this.postData.jwt_secret = "";
         this.repSecret = "";
         return

@@ -1,9 +1,11 @@
 <template>
   <div class="menuBar">
-    <div 
-      v-for="(btn, idx) in menuList" :key="idx"
-      v-bind:class="{ underLine: btn.lnk==activeBtn }"
-      v-on:click="go_2_hash(btn.lnk)">{{btn.txt}}</div>
+    <div v-for="(btn, idx) in menuList" :key="idx" >
+      <div class="btn" v-if="btn.role.includes($store.state.role)"
+        v-bind:class="{ underLine: btn.lnk==activeBtn, lastBtn: idx==menuList.length-1 }" 
+        v-on:click="go_2_hash(btn.lnk)">{{btn.txt}}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -21,19 +23,23 @@ export default {
       menuList: [
         {
           txt: "Home",
-          lnk: "#/"
+          lnk: "#/",
+          role: ["user", "admin"]
         },
         {
           txt: "Users",
-          lnk: "#/users"
+          lnk: "#/users",
+          role: ["admin"]
         },
         {
           txt: "Apps",
-          lnk: "#/apps"
+          lnk: "#/apps",
+          role: ["admin"]
         },
         {
           txt: "Logout",
-          lnk: this.logout
+          lnk: this.logout,
+          role: ["user", "admin"]
         }
       ]
     }
@@ -82,19 +88,21 @@ export default {
 }
 .menuBar div{
   display: inline-block;
+}
+.menuBar .btn{
   min-width: 70px;
   padding:1px 8px 1px 8px;
   text-align: center;
   border-left: 2px solid #000;
   cursor: pointer;
 }
-.menuBar div:last-child{
-  border-right: 2px solid #000;
-}
-.menuBar div:hover{
+.menuBar .btn:hover{
   text-decoration: underline;
 }
 .underLine{
   text-decoration: underline;
+}
+.lastBtn{
+  border-right: 2px solid #000;
 }
 </style>
