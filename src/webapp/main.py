@@ -56,6 +56,12 @@ accessMatrix = [
     "methods": ["GET", "POST", "PUT"],
     "roles": ["admin"],
     "auth": True
+  },
+  {
+    "path": "/api/links",
+    "methods": ["GET"],
+    "roles": ["user", "admin"],
+    "auth": True
   }
 ]
 
@@ -167,7 +173,7 @@ class Access(db.Model, SerializerMixin):
 
 
 #-Helpers Section--------------------------------------------------
-diableAuth = False
+disableAuth = True
 
 #-----------------
 def create_base_roles():
@@ -202,7 +208,13 @@ def check_before_every_request():
     "message": "",
     "status": 401
   }
-  if not diableAuth and request.path.startswith("/api/") and request.path != "/api/init" and request.path != "/api/user/auth" and "username" not in session: #LACY!!!
+
+  #-The Authentication Thing---
+  if disableAuth:
+    print("Authentication Disabled")
+    return
+
+  if request.path.startswith("/api/") and request.path != "/api/init" and request.path != "/api/user/auth" and "username" not in session: #LACY!!!
     reqObj["message"] = "Please authenticate / login"
     return jsonify(reqObj), 401 
 
@@ -210,14 +222,13 @@ def check_before_every_request():
   for rule in accessMatrix:
     if not rule["auth"] and request.method in rule["methods"]: 
       break
-    if not diableAuth and "role" in session and request.path.startswith(rule["path"]) and request.method in rule["methods"]: #Double LACY!!!
+    if "role" in session and request.path.startswith(rule["path"]) and request.method in rule["methods"]: #Double LACY!!!
       curRole = session["role"]
       if curRole not in rule["roles"]:
         reqObj["message"] = "Not Allowed for role '%s'" %curRole
         return jsonify(reqObj), 401
       break
       
-
 
 #-The HTML serve part---------------------------------------------
 @app.route('/', methods=["GET"])
@@ -1077,6 +1088,30 @@ def api_accesses_delete(id):
 
 
 #------------------------------------------------
+@app.route('/api/links', methods=["GET"])
+def api_links_get():
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200,
+    "data": []
+  }
+
+  usrObj = User.query.filter_by(username=session["username"]).first()
+  accObj = Access.query.filter_by(user_id=usrObj.id)
+  for app in accObj:
+    dic = app.to_dict(only=("app_id", "user_id", "app.app_url", "app.auth_url", "app.name", "user.username",)) 
+    reqObj["data"].append(dic)
+
+  print(reqObj["data"])
+
+
+  #------------------
+  return jsonify(reqObj), reqObj["status"] 
+
+
+#------------------------------------------------
 @app.route('/api/jwt/<app>', methods=["GET"])
 def api_jwt_get(app):
   reqObj = {
@@ -1127,7 +1162,6 @@ def api_jwt_get(app):
 
   #------------------
   return jsonify(reqObj), reqObj["status"] 
-
 
 #------------------------------------------------
 
