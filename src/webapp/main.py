@@ -1230,7 +1230,10 @@ def api_jwt_get(app):
   }
   # print(appObj.jwt_secret)
   encJwt = jwt.encode(payload, appObj.jwt_secret, algorithm=appObj.jwt_algorithm)
-  reqObj["jwt"] = encJwt.decode()
+  if type(encJwt) == bytes:
+    encJwt = encJwt.decode()
+  
+  reqObj["jwt"] = encJwt
   reqObj["timestamp"] = datetime.today().strftime("%Y-%m-%d %H:%M:%S")
   reqObj["auth_url"] = appObj.auth_url
   reqObj["app_url"] = appObj.app_url
