@@ -1,11 +1,14 @@
 <template>
   <div class="Home">
-    <div class="viewHl">Your Apps</div>
+    <!-- <div class="viewHl">Your Apps</div> -->
    
    
     <div class="appsRaster">
-      <div class="box" v-for="(app, idx) in data" :key="idx" @click="create_jwt(idx)">
-        <img src="@/assets/icon_app-spacer.png" :id="app.app.name" />
+      <div class="frame" v-for="(app, idx) in data" :key="idx" @click="create_jwt(idx)">
+        <div class="box">
+          <img src="@/assets/icon_app-spacer.png" :id="app.app.name" />
+        </div>
+        <div class="tagTxt">{{app.app.name}}</div>
       </div>
     </div>
 
@@ -130,12 +133,14 @@ export default {
   min-width: 600px;
   /* background-color: #fff; */
 }
-.appsRaster .box{
+.appsRaster .frame{
   display: inline-block;
-  margin: 24px;
-  height: 140px;
-  width: 140px;
-  padding:20px;
+  margin: 3.5%;
+}
+.appsRaster .box{  
+  height: 120px;
+  width: 120px;
+  padding:16px;
   cursor: pointer;
   box-shadow: 0px 2px 4px #666;
   border: 0.5px solid #666;
@@ -149,6 +154,14 @@ export default {
 .appsRaster .box img{
   cursor: pointer;
   width: 100%;
+}
+.appsRaster .tagTxt{
+  margin: auto;
+  padding:12px;
+  font-size: 16px;
+  color: #444;
+  text-shadow: 0px 1px #fff;
+  font-weight: bold;
 }
 
 </style>
