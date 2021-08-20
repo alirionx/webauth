@@ -142,6 +142,7 @@ class Apps(db.Model, SerializerMixin):
   session_key = db.Column(db.String(64) )
   jwt_secret = db.Column(db.String(64) )
   jwt_algorithm = db.Column(db.String(32) )
+  icon = db.Column(db.LargeBinary() )
 
   # requiredCols = ["name", "auth_url", "app_url", "session_key", "jwt_secret", "jwt_algorithm"]
   requiredCols = ["name", "auth_url", "app_url", "session_key"]
@@ -173,7 +174,7 @@ class Access(db.Model, SerializerMixin):
 
 
 #-Helpers Section--------------------------------------------------
-disableAuth = True
+disableAuth = False
 
 #-----------------
 def create_base_roles():
@@ -691,7 +692,7 @@ def api_apps_get():
   reqObj["data"] = []
   appsObj = Apps.query.all()
   for app in appsObj:
-    dic = app.to_dict(rules=('-jwt_secret',))
+    dic = app.to_dict(rules=('-jwt_secret', '-icon',))
     reqObj["data"].append(dic)
 
   #-------------
@@ -716,11 +717,87 @@ def api_app_get(app):
     reqObj["message"] = "App '%s' not found" %app
     return jsonify(reqObj), reqObj["status"] 
  
-  reqObj["data"] = appObj.to_dict(rules=('-jwt_secret', ))
+  reqObj["data"] = appObj.to_dict(rules=('-jwt_secret', '-icon', ))
 
   #-------------
   return jsonify(reqObj), reqObj["status"]
 
+#------------------------------------------------
+@app.route('/api/apps/<app>/icon', methods=["GET"])
+def api_app_icon_get(app):
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  reqObj["data"] = []
+  appObj = Apps.query.filter_by(name=app).first()
+  if not appObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "App '%s' not found" %app
+    return jsonify(reqObj), reqObj["status"] 
+
+
+  if not appObj.icon:
+    reqObj["status"] = 404
+    reqObj["message"] = "No Icon for App '%s'" %app
+    return jsonify(reqObj), reqObj["status"] 
+
+  #-------------
+  return appObj.icon, 200
+
+#------------------------------------------------
+@app.route('/api/apps/<app>/icon', methods=["POST"])
+def api_app_icon_post(app):
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  reqObj["data"] = []
+  appObj = Apps.query.filter_by(name=app).first()
+  if not appObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "App '%s' not found" %app
+    return jsonify(reqObj), reqObj["status"] 
+
+  file = request.files['file']
+  blob = file.read()
+  appObj.icon = blob
+  db.session.commit()
+
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
+
+#------------------------------------------------
+@app.route('/api/apps/<app>/icon', methods=["DELETE"])
+def api_app_icon_delete(app):
+  reqObj = {
+    "method": request.method,
+    "path": request.path,
+    "message": "",
+    "status": 200
+  }
+
+  #-Validity Check---
+  reqObj["data"] = []
+  appObj = Apps.query.filter_by(name=app).first()
+  if not appObj:
+    reqObj["status"] = 404
+    reqObj["message"] = "App '%s' not found" %app
+    return jsonify(reqObj), reqObj["status"] 
+
+  appObj.icon = None
+  db.session.commit()
+
+  #-------------
+  return jsonify(reqObj), reqObj["status"]
 
 #------------------------------------------------
 @app.route('/api/apps', methods=["POST"])
@@ -1104,9 +1181,6 @@ def api_links_get():
     dic = app.to_dict(only=("app_id", "user_id", "app.app_url", "app.auth_url", "app.name", "user.username",)) 
     reqObj["data"].append(dic)
 
-  print(reqObj["data"])
-
-
   #------------------
   return jsonify(reqObj), reqObj["status"] 
 
@@ -1154,6 +1228,7 @@ def api_jwt_get(app):
   payload = {
     appObj.session_key: usrName
   }
+  # print(appObj.jwt_secret)
   encJwt = jwt.encode(payload, appObj.jwt_secret, algorithm=appObj.jwt_algorithm)
   reqObj["jwt"] = encJwt.decode()
   reqObj["timestamp"] = datetime.today().strftime("%Y-%m-%d %H:%M:%S")

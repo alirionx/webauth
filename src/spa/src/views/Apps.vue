@@ -47,6 +47,11 @@
       v-if="activeJwt!=null"
       v-bind:callback="reset_app_set_jwt"
       v-bind:dataIn="data[activeJwt]" />
+
+    <UploadIcon 
+      v-if="activeIcon!=null"
+      v-bind:callback="reset_app_set_icon"
+      v-bind:dataIn="data[activeIcon]" />
       
 
   </div>
@@ -59,6 +64,7 @@ import AppAdd from '../components/AppAdd.vue'
 import AppEdit from '../components/AppEdit.vue'
 import SetAccessesApp from '../components/SetAccessesApp.vue'
 import SetJwt from '../components/SetJwt.vue'
+import UploadIcon from '../components/UploadIcon.vue'
 
 export default {
   name: 'Apps',
@@ -71,6 +77,7 @@ export default {
     AppEdit,
     SetAccessesApp,
     SetJwt,
+    UploadIcon
   },
   data(){
     return {
@@ -80,6 +87,7 @@ export default {
       activeAdd: false,
       activeAccess: null,
       activeJwt: null,
+      activeIcon: null,
       data: [],
       defi:[
         {
@@ -127,6 +135,10 @@ export default {
         {
           txt: "Edit Metadata",
           act: this.call_app_edit
+        },
+        {
+          txt: "Upload Icon",
+          act: this.call_app_set_icon
         },
         {
           txt: "Configure Jwt",
@@ -190,12 +202,19 @@ export default {
     },
 
     call_app_set_jwt(idx){
-      console.log("Set JWT Secret 4 "+this.data[idx].name)
+      // console.log("Set JWT Secret 4 "+this.data[idx].name)
       this.activeJwt = idx;
 
     },
     reset_app_set_jwt(){
       this.activeJwt = null;
+    },
+
+    call_app_set_icon(idx){
+      this.activeIcon = idx;
+    },
+    reset_app_set_icon(){
+      this.activeIcon = null;
     },
 
 
