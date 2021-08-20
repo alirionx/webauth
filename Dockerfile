@@ -11,6 +11,6 @@ COPY ./src/webapp /data
 RUN pip3 install waitress
 
 WORKDIR /data
-EXPOSE 80
+EXPOSE 5000
 
-CMD waitress-serve --port=80 "main:app" 
+CMD waitress-serve --port=5000 "main:app" 
